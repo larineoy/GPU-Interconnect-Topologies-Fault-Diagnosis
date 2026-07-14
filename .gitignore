@@ -22,7 +22,4 @@ venv/
 .idea/
 .vscode/
 
-# Pytest / coverage
-.pytest_cache/
-.coverage
-htmlcov/
+.matplotlib_cache/
