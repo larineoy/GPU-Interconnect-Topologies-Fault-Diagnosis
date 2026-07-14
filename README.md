@@ -14,12 +14,12 @@ Repository scaffolding is in place. Implementation proceeds by step:
 | 2 | Topology generation + graph loader | Done |
 | 3 | Failure priors + hypothesis space | Done |
 | 4 | Test catalog | Done |
-| 5 | Observation matrix (on-the-fly) | Pending |
-| 6 | Information-gain algorithm | Pending |
-| 7 | Simulator | Pending |
-| 8 | Main experiments | Pending |
-| 9 | Ablation studies | Pending |
-| 10 | Paper figures | Pending |
+| 5 | Observation matrix (on-the-fly) | Done |
+| 6 | Information-gain algorithm | Done |
+| 7 | Simulator | Done |
+| 8 | Main experiments | Done |
+| 9 | Ablation studies | Done |
+| 10 | Paper figures | Done |
 
 ## Setup
 
@@ -27,7 +27,33 @@ Repository scaffolding is in place. Implementation proceeds by step:
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+python scripts/generate_topology.py   # if topology JSON is missing
 ```
+
+## Run main experiment
+
+```bash
+python experiments/run_main.py                  # 1000 trials (default)
+python experiments/run_main.py --trials 100     # smoke run
+```
+
+Outputs land in `results/` (`main_trials.csv`, `main_summary.json`).
+
+## Run ablations
+
+```bash
+python experiments/run_ablation.py --trials 500
+```
+
+Compares: InfoSlice, random selection, no duration weighting, uniform priors, NVL36 vs NVL72 scale.
+
+## Generate paper figures
+
+```bash
+python experiments/generate_figures.py
+```
+
+Writes PNGs to `paper/figures/` (and `results/figures/`).
 
 ## Project layout
 
