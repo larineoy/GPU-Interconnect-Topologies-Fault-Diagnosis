@@ -37,20 +37,40 @@ def modeled_type_priors(priors_data: dict[str, Any] | None = None) -> dict[str, 
     return type_priors
 
 
-def instance_prior(component_type: str, priors_data: dict[str, Any] | None = None) -> float:
+def instance_prior(
+    component_type: str,
+    priors_data: dict[str, Any] | None = None,
+    *,
+    component_counts: dict[str, int] | None = None,
+) -> float:
     """Uniform prior for one instance of a component type."""
     data = priors_data if priors_data is not None else load_priors_json()
     type_priors = modeled_type_priors(data)
     if component_type not in type_priors:
         raise KeyError(f"Unknown component type: {component_type}")
 
-    counts = data["component_counts"]
+    counts = component_counts if component_counts is not None else data["component_counts"]
     count = int(counts[component_type])
     if count <= 0:
         raise ValueError(f"Invalid component count for {component_type}: {count}")
     return type_priors[component_type] / count
 
 
-def expected_hypothesis_count(priors_data: dict[str, Any] | None = None) -> int:
+def counts_from_topology(topology: Any) -> dict[str, int]:
+    """Derive component counts from a loaded topology object."""
+    return {
+        "gpu": len(topology.get_gpus()),
+        "nvswitch": len(topology.get_switches()),
+        "nvlink": len(topology.links),
+        "compute_tray": len(topology.compute_nodes),
+    }
+
+
+def expected_hypothesis_count(
+    priors_data: dict[str, Any] | None = None,
+    *,
+    component_counts: dict[str, int] | None = None,
+) -> int:
     data = priors_data if priors_data is not None else load_priors_json()
-    return sum(int(data["component_counts"][t]) for t in MODELED_TYPES)
+    counts = component_counts if component_counts is not None else data["component_counts"]
+    return sum(int(counts[t]) for t in MODELED_TYPES)

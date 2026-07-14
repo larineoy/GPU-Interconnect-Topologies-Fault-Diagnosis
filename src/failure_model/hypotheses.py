@@ -8,6 +8,7 @@ from typing import Iterable
 
 from src.failure_model.priors import (
     DEFAULT_PRIORS_PATH,
+    counts_from_topology,
     expected_hypothesis_count,
     instance_prior,
     load_priors_json,
@@ -49,14 +50,15 @@ def build_hypotheses(
     topology: NVL72Topology | None = None,
     priors_path: Path | str | None = None,
 ) -> list[Hypothesis]:
-    """Enumerate all 1,404 single-fault hypotheses with normalized priors."""
+    """Enumerate single-fault hypotheses with type priors split over topology counts."""
     topo = topology if topology is not None else load_topology()
     priors_data = load_priors_json(priors_path)
+    counts = counts_from_topology(topo)
 
-    gpu_prior = instance_prior("gpu", priors_data)
-    switch_prior = instance_prior("nvswitch", priors_data)
-    link_prior = instance_prior("nvlink", priors_data)
-    tray_prior = instance_prior("compute_tray", priors_data)
+    gpu_prior = instance_prior("gpu", priors_data, component_counts=counts)
+    switch_prior = instance_prior("nvswitch", priors_data, component_counts=counts)
+    link_prior = instance_prior("nvlink", priors_data, component_counts=counts)
+    tray_prior = instance_prior("compute_tray", priors_data, component_counts=counts)
 
     hypotheses: list[Hypothesis] = []
     hypotheses.extend(_hypotheses_for_components("gpu", topo.get_gpus(), gpu_prior))
@@ -68,7 +70,7 @@ def build_hypotheses(
         _hypotheses_for_components("compute_tray", topo.compute_nodes, tray_prior)
     )
 
-    expected = expected_hypothesis_count(priors_data)
+    expected = expected_hypothesis_count(priors_data, component_counts=counts)
     if len(hypotheses) != expected:
         raise ValueError(
             f"Expected {expected} hypotheses, built {len(hypotheses)}"
@@ -76,7 +78,6 @@ def build_hypotheses(
 
     total_prior = sum(h.prior for h in hypotheses)
     if abs(total_prior - 1.0) > 1e-9:
-        # Numerical guard: renormalize if floating-point drift appears.
         hypotheses = [
             Hypothesis(
                 id=h.id,
