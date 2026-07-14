@@ -8,6 +8,15 @@ from src.test_model.catalog import (
     get_test_type,
     load_test_types,
 )
+from src.test_model.observation_matrix import (
+    DEGRADED,
+    FAIL,
+    PASS,
+    ObservationModel,
+    exercised_components,
+    get_expected_outcome,
+    outcome_likelihood,
+)
 
 __all__ = [
     "TestType",
@@ -16,4 +25,11 @@ __all__ = [
     "expand_variants",
     "get_test_type",
     "load_test_types",
+    "PASS",
+    "FAIL",
+    "DEGRADED",
+    "ObservationModel",
+    "exercised_components",
+    "get_expected_outcome",
+    "outcome_likelihood",
 ]
